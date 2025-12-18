@@ -1,0 +1,146 @@
+<div class="space-y-6 lg:space-y-8">
+  <!-- Header Metrics -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <!-- Upcoming Deadlines -->
+    <div class="bg-white rounded-xl shadow-md p-6 flex items-center space-x-4">
+      <div class="p-3.5 bg-amber-100 rounded-full">
+        <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-slate-500 uppercase">Upcoming Deadlines</p>
+        <p class="text-3xl font-bold text-slate-900">{{ upcomingCount() }}</p>
+      </div>
+    </div>
+    <!-- Overdue Tasks -->
+    <div class="bg-white rounded-xl shadow-md p-6 flex items-center space-x-4">
+      <div class="p-3.5 bg-red-100 rounded-full">
+        <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-slate-500 uppercase">Overdue Tasks</p>
+        <p class="text-3xl font-bold text-red-600">{{ overdueCount() }}</p>
+      </div>
+    </div>
+    <!-- Estimated Liability -->
+    <div class="bg-white rounded-xl shadow-md p-6 flex items-center space-x-4">
+      <div class="p-3.5 bg-sky-100 rounded-full">
+        <svg class="w-7 h-7 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-slate-500 uppercase">Est. Liability</p>
+        <p class="text-3xl font-bold text-slate-900">{{ estimatedLiability() | currency:'USD':'symbol':'1.0-0' }}</p>
+      </div>
+    </div>
+    <!-- Compliance Score -->
+    <div class="bg-white rounded-xl shadow-md p-6 flex items-center space-x-4">
+       <div class="relative w-14 h-14">
+        <svg class="w-full h-full" viewBox="0 0 36 36">
+          <path class="text-slate-200" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="text-green-500" stroke="currentColor" stroke-width="3" fill="none"
+            [attr.stroke-dasharray]="complianceScore() + ', 100'"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="text-sm font-bold text-slate-800">{{ complianceScore() }}%</span>
+        </div>
+      </div>
+       <div>
+        <p class="text-sm font-medium text-slate-500 uppercase">Compliance Score</p>
+        <p class="text-xs text-slate-400">Past 12 months</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    <!-- Calendar -->
+    <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-slate-800">{{ currentDate().toLocaleString('default', { month: 'long', year: 'numeric' }) }}</h2>
+        <div class="flex items-center space-x-1">
+          <button (click)="previousMonth()" class="p-2 rounded-full hover:bg-slate-100 transition-colors"><svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+          <button (click)="nextMonth()" class="p-2 rounded-full hover:bg-slate-100 transition-colors"><svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+        </div>
+      </div>
+      <div class="grid grid-cols-7 gap-px border-t border-l border-slate-200">
+        @for(day of ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; track day) {
+          <div class="text-center text-xs font-semibold text-slate-500 py-2 border-b border-r border-slate-200 bg-slate-50">{{ day }}</div>
+        }
+        @for(day of calendarGrid(); track day.date) {
+          <div (click)="selectDay(day)" class="relative h-24 p-1.5 text-left border-b border-r border-slate-200"
+            [class.bg-slate-50]="!day.isCurrentMonth"
+            [class.cursor-pointer]="day.isCurrentMonth && day.events.length > 0"
+            [class.hover:bg-sky-50]="day.isCurrentMonth && day.events.length > 0"
+            [class.bg-sky-100]="selectedDay()?.date.getTime() === day.date.getTime()">
+            <time class="text-xs font-medium" [class]="day.isToday ? 'flex items-center justify-center w-5 h-5 bg-sky-600 text-white rounded-full' : (day.isCurrentMonth ? 'text-slate-700' : 'text-slate-400')">{{ day.dayOfMonth }}</time>
+            @if(day.events.length > 0) {
+              <div class="mt-1 flex flex-wrap gap-1">
+                @for(event of day.events.slice(0, 4); track event.id) {
+                  <div class="w-1.5 h-1.5 rounded-full" [class]="getEventDotColor(event.status)"></div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Summary Panel -->
+    <div class="space-y-6">
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">Urgent Deadlines</h3>
+        <div class="space-y-3">
+          @for(deadline of urgentDeadlines(); track deadline.id) {
+            <div class="p-3 rounded-lg flex items-start space-x-3" [class]="deadline.status === 'Overdue' ? 'bg-red-50' : 'bg-amber-50'">
+              <div class="flex-shrink-0 w-4 h-4 rounded-full mt-1" [class]="getEventDotColor(deadline.status)"></div>
+              <div>
+                <p class="font-semibold text-sm text-slate-800">{{ deadline.formName }}</p>
+                <p class="text-xs text-slate-500">{{ deadline.jurisdiction }} - Due {{ deadline.dueDate.toLocaleDateString() }}</p>
+              </div>
+            </div>
+          } @empty {
+            <p class="text-sm text-slate-500 text-center py-4">No urgent deadlines.</p>
+          }
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">Liability Breakdown</h3>
+        <app-tax-liability-chart></app-tax-liability-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="bg-white rounded-xl shadow-md p-6">
+     <h2 class="text-lg font-semibold text-slate-800 mb-4">Recent Activity</h2>
+     <div class="overflow-x-auto">
+       <table class="w-full text-sm text-left text-slate-600">
+         <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+           <tr>
+             <th scope="col" class="px-4 py-3">Form/MMC</th>
+             <th scope="col" class="px-4 py-3">Jurisdiction</th>
+             <th scope="col" class="px-4 py-3">Filing Date</th>
+             <th scope="col" class="px-4 py-3">Status</th>
+           </tr>
+         </thead>
+         <tbody>
+           @for(filing of recentActivity(); track filing.id) {
+             <tr class="border-b border-slate-200 hover:bg-slate-50">
+               <td class="px-4 py-3 font-medium text-slate-900">{{ filing.formName }}</td>
+               <td class="px-4 py-3">{{ filing.jurisdiction }}</td>
+               <td class="px-4 py-3">{{ filing.dueDate.toLocaleDateString() }}</td>
+               <td class="px-4 py-3">
+                 <div class="inline-flex items-center py-1 px-2.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                   <svg class="w-3 h-3 mr-1.5" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3.5L4.5 8.5L2.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                   Filed
+                 </div>
+               </td>
+             </tr>
+           } @empty {
+            <tr><td colspan="4" class="text-center py-8 text-slate-500">No recent filings.</td></tr>
+           }
+         </tbody>
+       </table>
+     </div>
+  </div>
+</div>

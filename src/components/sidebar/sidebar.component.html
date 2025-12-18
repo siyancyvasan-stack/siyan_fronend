@@ -1,0 +1,82 @@
+<aside class="w-64 bg-slate-900 text-slate-300 flex flex-col">
+  <div (click)="handleLogoClick()" class="cursor-pointer h-20 flex items-center justify-center border-b border-slate-800">
+    <div class="flex items-center space-x-2">
+       <div class="grid grid-cols-2 gap-1">
+          <span class="w-3 h-3 bg-white rounded-full"></span>
+          <span class="w-3 h-3 bg-white rounded-full"></span>
+          <span class="w-3 h-3 bg-white rounded-full"></span>
+          <span class="w-3 h-3 bg-white rounded-full"></span>
+        </div>
+      <h1 class="text-2xl font-bold text-white">Lumina</h1>
+    </div>
+  </div>
+  <nav class="flex-1 px-4 py-6 space-y-6">
+    <!-- Top Level Nav -->
+    <div class="space-y-1">
+        <button (click)="handleTopLevelClick('dashboard', 'executive')"
+                class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                [class]="activeViewId() === 'dashboard' ? 'bg-sky-500 text-white' : 'hover:bg-slate-800'">
+            Dashboard
+        </button>
+        <button (click)="handleTopLevelClick('reports', 'reports')"
+                class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                [class]="activeViewId() === 'reports' ? 'bg-sky-500 text-white' : 'hover:bg-slate-800'">
+            Reports
+        </button>
+    </div>
+    
+    @for (section of navSections(); track section.title) {
+      <div class="space-y-2">
+        <p class="px-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">{{ section.title }}</p>
+        @for (item of section.items; track item.id) {
+          <div>
+            <button 
+              (click)="toggleSection(item.id)" 
+              class="w-full flex items-center justify-between px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors duration-200"
+              [class.bg-slate-800]="openSectionId() === item.id || 
+                (item.id === 'tax-compliance' && ['tax-dashboard', 'tax-calendar', 'tax-forms', 'tax-history'].includes(activeViewId())) ||
+                (item.id === 'payroll' && ['payroll-dashboard', 'employee-mgmt', 'run-payroll', 'payslip-history'].includes(activeViewId())) ||
+                (item.id === 'expense-management' && ['expense-dashboard', 'submit-expense', 'my-expenses', 'approval-queue', 'corp-cards'].includes(activeViewId()))
+              ">
+              <span class="font-medium text-sm">{{ item.title }}</span>
+              @if (item.subItems) {
+                <svg class="w-4 h-4 transition-transform" [class.rotate-180]="openSectionId() === item.id" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              }
+            </button>
+            @if(openSectionId() === item.id && item.subItems) {
+              <div class="pl-7 pt-2">
+                <div class="border-l border-slate-700 pl-5 space-y-1">
+                  @for (subItem of item.subItems; track subItem.id) {
+                    <a (click)="handleSubItemClick(subItem.id, subItem.view, item.id); $event.preventDefault()" href="#" 
+                       class="block py-1 text-sm rounded-lg"
+                       [class]="activeViewId() === subItem.id ? 'text-sky-400 font-semibold' : 'text-slate-400 hover:text-white'">
+                      {{ subItem.name }}
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </nav>
+  
+  <div class="px-4 py-6 border-t border-slate-800 space-y-4">
+    <a href="#" class="flex items-center px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg">
+      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0 3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      Settings
+    </a>
+     <a href="#" class="flex items-center px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg">
+      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.546-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      Help
+    </a>
+    <div class="flex items-center px-4">
+      <img class="h-10 w-10 rounded-full object-cover" src="https://picsum.photos/100/100" alt="User Avatar">
+      <div class="ml-3">
+        <p class="text-sm font-semibold text-white">Chitra</p>
+        <p class="text-xs text-slate-400">chitra@lumina.com</p>
+      </div>
+    </div>
+  </div>
+</aside>

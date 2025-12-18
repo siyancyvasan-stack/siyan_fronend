@@ -1,0 +1,17 @@
+<div class="flex flex-col h-full">
+  <h2 class="text-lg font-semibold text-slate-800 mb-4">Employee Distribution</h2>
+  <div class="flex items-center justify-around flex-grow">
+    <div #chart></div>
+    <div class="space-y-4">
+      @for (item of data; track item.name; let i = $index) {
+        <div class="flex items-center">
+          <span class="w-3 h-3 rounded-full mr-3" [style.background-color]="colors[i]"></span>
+          <div>
+            <span class="text-sm font-medium text-slate-700">{{ item.name }}</span>
+            <p class="text-xs text-slate-500">{{item.value}} Employees</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

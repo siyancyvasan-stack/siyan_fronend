@@ -1,0 +1,67 @@
+<div class="space-y-6">
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <p class="text-sm font-medium text-slate-500">Pending Expenses</p>
+      <p class="text-3xl font-bold text-slate-800 mt-2">{{ pendingExpenses() }}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <p class="text-sm font-medium text-slate-500">Policy Violations</p>
+      <p class="text-3xl font-bold text-red-500 mt-2">{{ policyViolations() }}</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-md p-6 lg:col-span-2">
+      <div class="flex justify-between items-center">
+        <p class="text-sm font-medium text-slate-500">Total Monthly Spend</p>
+        <p class="text-sm font-medium text-slate-500">{{ budgetUtilization() }}% of Budget</p>
+      </div>
+      <p class="text-3xl font-bold text-slate-800 mt-2">{{ totalMonthlySpend() | currency:'INR':'symbol':'1.0-0' }} / {{ monthlyBudget() | currency:'INR':'symbol':'1.0-0' }}</p>
+      <div class="w-full bg-slate-200 rounded-full h-2.5 mt-3">
+        <div class="bg-sky-500 h-2.5 rounded-full" [style.width.%]="budgetUtilization()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts & Insights -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <app-expense-monthly-trend-chart></app-expense-monthly-trend-chart>
+    </div>
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <app-expense-category-pie-chart></app-expense-category-pie-chart>
+    </div>
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <app-expense-insights></app-expense-insights>
+    </div>
+  </div>
+
+  <!-- Recent Claims Table -->
+  <div class="bg-white rounded-xl shadow-md p-6">
+    <h2 class="text-lg font-semibold text-slate-800 mb-4">Recent Expense Claims</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-slate-500">
+        <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+          <tr>
+            <th scope="col" class="px-6 py-3">Date</th>
+            <th scope="col" class="px-6 py-3">Merchant</th>
+            <th scope="col" class="px-6 py-3">Amount</th>
+            <th scope="col" class="px-6 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (claim of recentClaims(); track claim.id) {
+            <tr class="bg-white border-b hover:bg-slate-50">
+              <td class="px-6 py-4">{{ claim.date }}</td>
+              <td class="px-6 py-4 font-medium text-slate-900">{{ claim.merchant }}</td>
+              <td class="px-6 py-4">{{ claim.amount | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td class="px-6 py-4">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [class]="getStatusClass(claim.status)">
+                  {{ claim.status }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

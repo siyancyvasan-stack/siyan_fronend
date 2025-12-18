@@ -1,0 +1,156 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <h1 class="text-3xl font-bold text-slate-800">Tax Forms Library</h1>
+    <button (click)="openAddModal()" class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-sky-600 to-cyan-500 hover:from-sky-700 hover:to-cyan-600 rounded-lg flex items-center space-x-2 w-full md:w-auto justify-center">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+      <span>Generate New Form</span>
+    </button>
+  </div>
+  
+  <!-- Controls Card -->
+  <div class="bg-white p-4 rounded-xl shadow-md space-y-4">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="relative w-full md:max-w-xs">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <input 
+          (input)="onSearch($event)" 
+          type="text" 
+          placeholder="Search form name or ID..."
+          class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+      </div>
+      <div class="p-1 bg-slate-100 rounded-lg flex items-center">
+        <button (click)="setViewMode('list')" class="px-3 py-1 text-sm font-medium rounded-md transition-colors" [class]="viewMode() === 'list' ? 'bg-white text-sky-600 shadow' : 'text-slate-600 hover:bg-slate-200'">
+          List
+        </button>
+        <button (click)="setViewMode('card')" class="px-3 py-1 text-sm font-medium rounded-md transition-colors" [class]="viewMode() === 'card' ? 'bg-white text-sky-600 shadow' : 'text-slate-600 hover:bg-slate-200'">
+          Card
+        </button>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <select (change)="onFilterChange($event, jurisdictionFilter.set)" class="w-full border-slate-300 rounded-lg bg-slate-50 text-sm focus:ring-sky-500 focus:border-sky-500">
+        @for(j of jurisdictions(); track j) { <option [value]="j">{{ j }}</option> }
+      </select>
+      <select (change)="onFilterChange($event, yearFilter.set)" class="w-full border-slate-300 rounded-lg bg-slate-50 text-sm focus:ring-sky-500 focus:border-sky-500">
+        @for(y of years(); track y) { <option [value]="y">{{ y === 'All' ? 'All Years' : y }}</option> }
+      </select>
+      <select (change)="onFilterChange($event, statusFilter.set)" class="w-full border-slate-300 rounded-lg bg-slate-50 text-sm focus:ring-sky-500 focus:border-sky-500">
+        @for(s of statuses; track s) { <option [value]="s">{{ s === 'All' ? 'All Statuses' : s }}</option> }
+      </select>
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  @if (filteredForms().length > 0) {
+    @if (viewMode() === 'list') {
+      <div class="bg-white rounded-xl shadow-md overflow-x-auto">
+        <table class="w-full text-sm text-left text-slate-500">
+          <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+            <tr>
+              <th scope="col" class="px-6 py-3">Form Name</th>
+              <th scope="col" class="px-6 py-3">Jurisdiction</th>
+              <th scope="col" class="px-6 py-3">Year</th>
+              <th scope="col" class="px-6 py-3">Status</th>
+              <th scope="col" class="px-6 py-3">Last Modified</th>
+              <th scope="col" class="px-6 py-3"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (form of filteredForms(); track form.id) {
+              <tr class="bg-white border-b hover:bg-slate-50">
+                <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{{ form.formName }}</th>
+                <td class="px-6 py-4">{{ form.jurisdiction }}</td>
+                <td class="px-6 py-4">{{ form.taxYear }}</td>
+                <td class="px-6 py-4">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [class]="getStatusClass(form.status)">
+                    {{ form.status }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">{{ form.modifiedDate.toLocaleDateString() }}</td>
+                <td class="px-6 py-4 text-right space-x-2">
+                   <button (click)="openEditModal(form)" class="p-1.5 text-slate-500 hover:text-sky-600 rounded-full hover:bg-slate-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"></path></svg></button>
+                  <button (click)="deleteForm(form.id)" class="p-1.5 text-slate-500 hover:text-red-600 rounded-full hover:bg-slate-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @for(form of filteredForms(); track form.id) {
+          <div class="bg-white rounded-xl shadow-md p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between">
+                <h3 class="font-bold text-slate-800">{{ form.formName }}</h3>
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [class]="getStatusClass(form.status)">
+                  {{ form.status }}
+                </span>
+              </div>
+              <p class="text-sm text-slate-500 mt-1">{{ form.jurisdiction }} • {{ form.taxYear }}</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-200 flex items-center justify-between">
+              <p class="text-xs text-slate-400">Modified: {{ form.modifiedDate.toLocaleDateString() }}</p>
+              <div class="space-x-1">
+                 <button (click)="openEditModal(form)" class="p-1.5 text-slate-500 hover:text-sky-600 rounded-full hover:bg-slate-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"></path></svg></button>
+                 <button (click)="deleteForm(form.id)" class="p-1.5 text-slate-500 hover:text-red-600 rounded-full hover:bg-slate-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  } @else {
+    <div class="text-center py-16 bg-white rounded-xl shadow-md">
+       <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
+      <h3 class="mt-2 text-sm font-medium text-slate-900">No forms found</h3>
+      <p class="mt-1 text-sm text-slate-500">Adjust your filters or create a new form.</p>
+    </div>
+  }
+</div>
+
+<!-- Add/Edit Form Modal -->
+@if(isModalOpen()) {
+  <div class="fixed inset-0 bg-black bg-opacity-60 z-40 flex items-center justify-center" (click)="closeModal()">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 m-4" (click)="$event.stopPropagation()">
+       <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-semibold text-slate-800">{{ modalMode() === 'add' ? 'Generate New Form' : 'Edit Form' }}</h3>
+        <button (click)="closeModal()" class="p-1 rounded-full hover:bg-slate-100">
+          <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <form [formGroup]="taxForm" (ngSubmit)="saveForm()" class="space-y-4">
+        <div>
+          <label for="formName" class="text-sm font-medium text-slate-700">Form Name</label>
+          <input id="formName" formControlName="formName" type="text" placeholder="e.g. Form W-2" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500">
+        </div>
+         <div>
+          <label for="jurisdiction" class="text-sm font-medium text-slate-700">Jurisdiction</label>
+          <input id="jurisdiction" formControlName="jurisdiction" type="text" placeholder="e.g. US, California" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="taxYear" class="text-sm font-medium text-slate-700">Tax Year</label>
+              <input id="taxYear" formControlName="taxYear" type="number" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-sky-500">
+            </div>
+            <div>
+              <label for="status" class="text-sm font-medium text-slate-700">Status</label>
+              <select id="status" formControlName="status" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-sky-500">
+                <option>Draft</option>
+                <option>Ready</option>
+                <option>Filed</option>
+                <option>Archived</option>
+              </select>
+            </div>
+        </div>
+        <div class="flex justify-end pt-4 space-x-2">
+            <button type="button" (click)="closeModal()" class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg">Cancel</button>
+            <button type="submit" [disabled]="taxForm.invalid" class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-sky-600 to-cyan-500 hover:from-sky-700 hover:to-cyan-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">Save Form</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

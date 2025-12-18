@@ -1,0 +1,132 @@
+<div class="space-y-6 lg:space-y-8">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-800">Payroll Dashboard</h1>
+      <p class="text-slate-500 mt-1">
+        Overview of your organization's payroll status • {{ currentDate().toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' }) }}
+      </p>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    @for(kpi of payrollKpis(); track kpi.title) {
+      <div class="rounded-xl shadow-sm p-6 flex flex-col justify-between" [class]="kpi.bgColor + ' ' + (kpi.bgColor === 'bg-white' ? 'border border-slate-200' : '')">
+        <div>
+          <div class="flex items-start justify-between">
+            <p class="text-sm font-medium text-slate-600">{{ kpi.title }}</p>
+            <div class="p-2.5 rounded-lg" [class]="kpi.iconBgColor">
+              @switch (kpi.icon) {
+                @case ('calendar') { <svg class="w-6 h-6" [class]="kpi.iconTextColor" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> }
+                @case ('dollar') { <svg class="w-6 h-6" [class]="kpi.iconTextColor" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1h4v1h-4zm-2 10v1h4v-1h-4z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M12 6h.01M12 21a9 9 0 110-18 9 9 0 010 18z"></path></svg> }
+                @case ('people') { <svg class="w-6 h-6" [class]="kpi.iconTextColor" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm6-11a4 4 0 11-8 0 4 4 0 018 0z"></path></svg> }
+                @case ('pending') { <svg class="w-6 h-6" [class]="kpi.iconTextColor" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg> }
+              }
+            </div>
+          </div>
+          <p class="text-3xl lg:text-4xl font-bold text-slate-900 mt-2">{{ kpi.value }}</p>
+          <div class="h-5 mt-2">
+            @if(kpi.trend) {
+              <p class="text-xs font-medium" [class]="kpi.trend.color">{{ kpi.trend.value }}</p>
+            } @else {
+              <p class="text-xs text-slate-500">{{ kpi.subtext }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl shadow-md p-6 min-h-[320px]">
+      <app-payroll-cost-by-dept-chart></app-payroll-cost-by-dept-chart>
+    </div>
+    <div class="bg-white rounded-xl shadow-md p-6 min-h-[320px]">
+      <app-monthly-payroll-trend-chart></app-monthly-payroll-trend-chart>
+    </div>
+    <div class="bg-white rounded-xl shadow-md p-6 min-h-[320px]">
+      <app-employee-distribution-chart></app-employee-distribution-chart>
+    </div>
+    <div class="bg-white rounded-xl shadow-md p-6 min-h-[320px]">
+      <app-overtime-trend-chart></app-overtime-trend-chart>
+    </div>
+  </div>
+
+  <!-- Recent Payroll Runs Table -->
+  <div class="bg-white rounded-xl shadow-md">
+    <div class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <h2 class="text-lg font-semibold text-slate-800">Recent Payroll Runs</h2>
+      <div class="relative w-full md:max-w-xs">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <input (input)="onSearch($event)" type="text" placeholder="Filter by Run ID or Period..."
+          class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-slate-500">
+        <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+          <tr>
+            <th scope="col" class="px-6 py-3">Run ID</th>
+            <th scope="col" class="px-6 py-3">Pay Period</th>
+            <th scope="col" class="px-6 py-3">Process Date</th>
+            <th scope="col" class="px-6 py-3">Status</th>
+            <th scope="col" class="px-6 py-3">Employees</th>
+            <th scope="col" class="px-6 py-3">Total Cost</th>
+            <th scope="col" class="px-6 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (run of filteredRuns(); track run.runId) {
+            <tr class="bg-white border-b hover:bg-slate-50 cursor-pointer" (click)="toggleRow(run.runId)">
+              <th scope="row" class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{{ run.runId }}</th>
+              <td class="px-6 py-4">{{ run.payPeriod }}</td>
+              <td class="px-6 py-4">{{ run.processDate }}</td>
+              <td class="px-6 py-4">
+                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full" [class]="getStatusClass(run.status)">
+                  {{ run.status }}
+                </span>
+              </td>
+              <td class="px-6 py-4">{{ run.employeeCount }}</td>
+              <td class="px-6 py-4 font-medium text-slate-800">{{ run.totalCost }}</td>
+              <td class="px-6 py-4 text-center">
+                 <svg class="w-5 h-5 text-slate-400 mx-auto transition-transform" [class.rotate-180]="expandedRunId() === run.runId" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </td>
+            </tr>
+            @if (expandedRunId() === run.runId) {
+              <tr class="bg-slate-50">
+                <td colspan="7" class="p-4">
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm p-4 bg-white rounded-lg border border-slate-200">
+                    <div class="col-span-2 md:col-span-1">
+                      <p class="text-xs text-slate-500">Gross Pay</p>
+                      <p class="font-medium text-slate-800">{{ run.grossPay }}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-slate-500">Deductions</p>
+                      <p class="font-medium text-slate-800">{{ run.deductions }}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-slate-500">Net Pay</p>
+                      <p class="font-medium text-slate-800">{{ run.netPay }}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-slate-500">Overtime Hours</p>
+                      <p class="font-medium text-slate-800">{{ run.overtimeHours }} hrs</p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr>
+                <td colspan="7" class="text-center py-10 text-slate-500">No payroll runs match your search.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

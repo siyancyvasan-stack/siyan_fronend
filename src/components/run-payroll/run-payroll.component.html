@@ -1,0 +1,227 @@
+<!-- Toast Notification -->
+@if (toastMessage(); as message) {
+  <div class="fixed top-24 right-8 bg-slate-900 text-white px-5 py-3 rounded-lg shadow-2xl flex items-center space-x-3 z-50 animate-fade-in-down">
+    <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <span>{{ message }}</span>
+  </div>
+}
+
+@if (!isApproved()) {
+  <div class="space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-3xl font-bold text-slate-800">Payroll Run</h1>
+      <p class="text-slate-500 mt-1">Configure and execute payroll for your organization</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-6">
+      <!-- Left Column -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Start Payroll Run Card -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <h2 class="text-lg font-semibold text-slate-800 mb-4">Start Payroll Run</h2>
+          <form [formGroup]="payrollRunForm" (ngSubmit)="calculatePayroll()" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="text-sm font-medium text-slate-600">Pay Period</label>
+                <select formControlName="payPeriod" class="form-select mt-1">
+                  <option value="" disabled>Select period</option>
+                  <option value="monthly-dec-2024">Monthly - Dec 2024</option>
+                  <option value="bi-weekly-dec-1-15">Bi-Weekly - Dec 1-15, 2024</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-slate-600">Country / Region</label>
+                <select formControlName="country" class="form-select mt-1">
+                  <option value="" disabled>Select country</option>
+                  <option value="in">India</option>
+                  <option value="lk">Sri Lanka</option>
+                  <option value="sa">Saudi Arabia</option>
+                  <option value="ae">United Arab Emirates</option>
+                  <option value="us">United States</option>
+                  <option value="uk">United Kingdom</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-slate-600">Currency</label>
+                <select formControlName="currency" class="form-select mt-1">
+                  <option value="INR">INR - Indian Rupee</option>
+                  <option value="LKR">LKR - Sri Lankan Rupee</option>
+                  <option value="SAR">SAR - Saudi Riyal</option>
+                  <option value="AED">AED - UAE Dirham</option>
+                  <option value="USD">USD - US Dollar</option>
+                  <option value="GBP">GBP - British Pound</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-sm font-medium text-slate-600">Salary Structure</label>
+                <select formControlName="salaryStructure" class="form-select mt-1">
+                  <option value="All">All Structures</option>
+                  <option value="tech">Tech Standard</option>
+                  <option value="sales">Sales Commission</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 pt-4 border-t border-slate-200">
+              <button type="submit" [disabled]="isCalculating() || payrollRunForm.invalid" class="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-lg shadow-sm flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed min-w-[160px]">
+                @if(isCalculating()) {
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Calculating...</span>
+                } @else {
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span>Calculate Payroll</span>
+                }
+              </button>
+              <button type="button" (click)="saveAsDraft()" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 border border-slate-200 hover:bg-slate-200 rounded-lg shadow-sm">
+                Save as Draft
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Computation Summary Card -->
+        @if (calculationDone()) {
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Computation Summary</h2>
+            <div class="space-y-4 text-sm">
+              <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                <span class="text-slate-600">Gross Salary</span>
+                <span class="font-semibold text-slate-800">{{ computationSummary().grossSalary | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                <span class="text-slate-600">Allowances</span>
+                <span class="font-semibold text-purple-600">+ {{ computationSummary().allowances | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                <span class="text-slate-600">Statutory Deductions</span>
+                <span class="font-semibold text-red-600">- {{ computationSummary().statutoryDeductions | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="flex justify-between items-center py-3">
+                <span class="text-slate-600">Other Deductions</span>
+                <span class="font-semibold text-red-600">- {{ computationSummary().otherDeductions | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <div class="flex justify-between items-center p-4 mt-2 bg-slate-50 rounded-lg">
+                <span class="font-bold text-slate-800 text-base">Net Pay</span>
+                <span class="text-2xl font-bold text-purple-600">{{ computationSummary().netPay | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Right Sidebar -->
+      @if (calculationDone()) {
+        <div class="lg:col-span-1 space-y-6">
+          
+          <!-- Run Details Card -->
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Run Details</h3>
+            <div class="space-y-5">
+              <div class="flex items-center gap-4">
+                <div class="p-2.5 bg-sky-100 rounded-lg">
+                  <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500">Pay Date</p>
+                  <p class="font-semibold text-slate-800">{{ runDetails().payDate }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="p-2.5 bg-purple-100 rounded-lg">
+                  <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm6-11a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500">Employees</p>
+                  <p class="font-semibold text-slate-800">{{ runDetails().employees }} employees</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="p-2.5 bg-green-100 rounded-lg">
+                  <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1h4v1h-4zm-2 10v1h4v-1h-4z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M12 6h.01M12 21a9 9 0 110-18 9 9 0 010 18z"></path></svg>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500">Total Cost</p>
+                  <p class="font-semibold text-slate-800">{{ runDetails().totalCost | currency:'USD':'symbol':'1.2-2' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Card -->
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Actions</h3>
+            <div class="space-y-3">
+              <button (click)="approvePayroll()" [disabled]="isApproving()" class="w-full px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-wait">
+                @if(isApproving()) {
+                  <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Approving...</span>
+                } @else {
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span>Approve Payroll</span>
+                }
+              </button>
+              <button (click)="sendForApproval()" class="w-full px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                Send for Approval
+              </button>
+              <button (click)="downloadPayslips()" class="w-full px-4 py-2.5 text-sm font-semibold text-purple-600 bg-white border-2 border-purple-500 hover:bg-purple-50 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Download Payslips
+              </button>
+            </div>
+          </div>
+
+          <!-- Pending Review Card -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+              <div class="flex-shrink-0 mt-0.5">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-200 text-yellow-800">
+                      Pending
+                  </span>
+              </div>
+              <div>
+                  <p class="text-sm font-semibold text-yellow-900">3 employees require review</p>
+                  <p class="text-xs text-yellow-700">Salary adjustments pending approval</p>
+              </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="bg-white rounded-xl shadow-md p-6 lg:p-12 flex flex-col items-center justify-center text-center min-h-[60vh]">
+    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center">
+      <svg class="w-12 h-12 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    </div>
+    <h2 class="text-3xl font-bold text-slate-800 mt-6">Payroll Approved Successfully!</h2>
+    <p class="text-slate-500 mt-2 max-w-md">The payroll run for {{ runDetails().employees }} employees with a total cost of {{ runDetails().totalCost | currency:'USD':'symbol':'1.2-2' }} has been approved and is now scheduled for processing.</p>
+    <button (click)="resetPayrollRun()" class="mt-8 px-6 py-3 font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-lg shadow-sm">
+      Run Another Payroll
+    </button>
+  </div>
+}
+
+<style>
+  .form-select {
+    @apply block w-full border-slate-300 rounded-lg bg-white text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500;
+  }
+  @keyframes fade-in-down {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in-down {
+    animation: fade-in-down 0.5s ease-out forwards;
+  }
+</style>

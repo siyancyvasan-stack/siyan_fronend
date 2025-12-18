@@ -1,0 +1,104 @@
+@if (!isLoggedIn()) {
+  <app-login (loginSuccess)="handleLogin()"></app-login>
+} @else {
+  <div class="flex h-screen bg-slate-100">
+    <app-sidebar (viewChanged)="handleViewChange($event)"></app-sidebar>
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <app-header [title]="activeTitle()"></app-header>
+      <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-sky-50 via-purple-50 to-pink-50 p-6 lg:p-8">
+        @if (activeView() === 'executive') {
+          <div class="space-y-8">
+             <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              @for (card of kpiCards(); track card.title; let i = $index) {
+                <div class="animate-fade-in" [style.animation-delay]="(i * 100) + 100 + 'ms'">
+                  <app-kpi-card [card]="card"></app-kpi-card>
+                </div>
+              }
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <!-- Main Chart and Actions -->
+              <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 animate-fade-in" style="animation-delay: 500ms;">
+                <app-cash-flow-chart></app-cash-flow-chart>
+              </div>
+              <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in" style="animation-delay: 600ms;">
+                <app-action-required></app-action-required>
+              </div>
+
+              <!-- Bottom Charts -->
+              <div class="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in" style="animation-delay: 700ms;">
+                  <app-budget-chart></app-budget-chart>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in" style="animation-delay: 800ms;">
+                  <app-expense-chart></app-expense-chart>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else if (activeView() === 'reports') {
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h1 class="text-2xl font-bold text-slate-800">Reports</h1>
+                <p class="mt-4 text-slate-600">Reports functionality will be implemented here.</p>
+            </div>
+        } @else if (activeView() === 'tax-dashboard') {
+          <app-tax-dashboard></app-tax-dashboard>
+        } @else if (activeView() === 'tax-calendar') {
+          <app-tax-calendar></app-tax-calendar>
+        } @else if (activeView() === 'tax-forms') {
+          <app-tax-forms-library></app-tax-forms-library>
+        } @else if (activeView() === 'tax-history') {
+           <app-filing-history></app-filing-history>
+        } @else if (activeView() === 'payroll-dashboard') {
+          <app-payroll-dashboard></app-payroll-dashboard>
+        } @else if (activeView() === 'payroll-employee-mgmt') {
+          <app-employee-management></app-employee-management>
+        } @else if (activeView() === 'payroll-run') {
+          <app-run-payroll></app-run-payroll>
+        } @else if (activeView() === 'payroll-history') {
+          <app-payslip-history></app-payslip-history>
+        } @else if (activeView() === 'expense-dashboard') {
+          <app-expense-dashboard></app-expense-dashboard>
+        } @else if (activeView() === 'expense-submit') {
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h1 class="text-2xl font-bold text-slate-800">Submit Expense</h1>
+                <p class="mt-4 text-slate-600">Submit Expense functionality will be implemented here.</p>
+            </div>
+        } @else if (activeView() === 'expense-my') {
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h1 class="text-2xl font-bold text-slate-800">My Expenses</h1>
+                <p class="mt-4 text-slate-600">My Expenses functionality will be implemented here.</p>
+            </div>
+        } @else if (activeView() === 'expense-approval') {
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h1 class="text-2xl font-bold text-slate-800">Approval Queue</h1>
+                <p class="mt-4 text-slate-600">Approval Queue functionality will be implemented here.</p>
+            </div>
+        } @else if (activeView() === 'expense-cards') {
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h1 class="text-2xl font-bold text-slate-800">Corporate Cards</h1>
+                <p class="mt-4 text-slate-600">Corporate Cards functionality will be implemented here.</p>
+            </div>
+        }
+      </main>
+    </div>
+  </div>
+}
+
+<style>
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+    opacity: 0;
+  }
+</style>
